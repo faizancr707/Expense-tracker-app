@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <title>HomePage</title>
+</head>
+<body>
+    <main>
+        <!-- Top Navigation Bar Start -->
+        <div class="topnav" id="myTopnav">
+            <div class="topnav-left">
+                <a href="#">LOGO</a>
+            </div>
+            <div class="topnav-center">
+                <a href="#home" class="active">Home</a>
+                <a href="#news">News</a>
+                <a href="#contact">Contact</a>
+                <a href="#about">About</a>
+            </div>
+            <div class="topnav-right">
+                <button id="login-btn" type="button" class="log"> Login </button>
+                <button id="signUp-btn" type="button" class="reg"> Signup </button>
+            </div>
+            <a href="javascript:void(0);" class="icon" onclick="toggleNav()">
+                <i class="fa fa-bars"></i>
+            </a>
+        </div>
+        <!-- Top Navigation Bar End -->
+        <h1>Expense Tracker</h1>
+        <!-- SignUp Modal  -->
+
+        <div id="signup-form-div" class="modal">
+            <div class="modal-content" >
+                <span class="close">&times;</span>
+                <form class="form" id="signup-form" action="/user" method="POST">
+                    <p class="title">Register </p>
+                    <p class="message">Signup now and get full access to our app. </p>
+                        <div class="flex">
+                        <label for="firstName">
+                            <input id="firstName" required="" placeholder="" type="text" class="input">
+                            <span>Firstname</span>
+                        </label>
+                
+                        <label for="lastName">
+                            <input id="lastName" required="" placeholder="" type="text" class="input">
+                            <span>Lastname</span>
+                        </label>
+                    </div>  
+                            
+                    <label for="email">
+                        <input id="email" required="" placeholder="" type="email" class="input">
+                        <span>Email</span>
+                    </label> 
+                        
+                    <label for="newPassword">
+                        <input id="newPassword" required="" placeholder="" type="password" class="input">
+                        <span>Password</span>
+                    </label>
+                    <label for="confirmPassword">
+                        <input  id="confirmPassword" required="" placeholder="" type="password" class="input">
+                        <span>Confirm password</span>
+                    </label>
+                    <button id="signUp-Submit-Btn" class="submit" disabled>Submit</button>
+                    <p class="signin">Already have an acount ? <a href="#">Signin</a> </p>
+                </form>
+            </div>
+        </div>
+        <!-- Login Modal  -->
+        <div id="login-form-div" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <form id="login-form" class="form" action="/user" method="POST">
+                    <p class="title">Login</p>
+                    <p class="message">Sign in to access your account.</p>
+                    <label>
+                        <input id="login-email" required="" placeholder="" type="email" class="input">
+                        <span>Email</span>
+                    </label>
+                
+                    <label>
+                        <input id="login-password" required="" placeholder="" type="password" class="input">
+                        <span>Password</span>
+                    </label>
+                    <button class="submit">Login</button>
+                    <button id="forgotPasswordbtn" type="button" class="submit"> Forgot Password </button>
+                    <p class="signin">Don't have an account? <a href="#">Sign up</a></p>
+                </form>                
+            </div>
+        </div>
+        <!-- Forgot Password Form -->
+        <div id="forgotPassword-div" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <form id="forgotPasword-form" class="form" action="/user" method="POST">
+                    <p class="title"> Reset Password </p>
+                    <p class="message">Enter your Email Id.</p>
+                    <label>
+                        <input id="reset-email" required="" placeholder="" type="email" class="input">
+                        <span>Email</span>
+                    </label>
+                    <button id="reset-btn" class="submit" type="submit"> Reset </button>
+                </form>
+            </div>
+        </div>
+        <!-- Expense Form --> 
+        <div id="expense-form-section" class="modal">
+            <div class="modal-content">
+                <form id="expense-from" action="/homepage" method="post" class="form" id="expense-form">
+                    <fieldset id="form-fieldset">
+                        <p class="title">Add Expense</p>
+                        <p class="message">Record your expense details</p>
+                
+                        <div class="flex">
+                            <label for="amount">
+                                <input type="number" id="amount" min="0" required class="input">
+                                <span>Amount</span>
+                            </label>
+                        </div>
+                
+                        <div class="flex">
+                            <label for="desc">
+                                <input type="text" id="desc"  required class="input">
+                                <span>Description</span>
+                            </label>
+                        </div>
+                
+                        <div class="flex select-wrapper">
+                            <label for="category">
+                                <select id="category" name="category" required class="input">
+                                    <option value="" selected disabled >Choose a category</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Rent">Rent</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Bills">Bills</option>
+                                </select>
+                            </label>
+                        </div>
+                        <button id="form-btn" type="submit" class="submit" style="display: block;" disabled>Submit</button>
+                    </fieldset>
+                </form>
+            </div>            
+        </div>
+        
+        <!-- Display Expense -->
+        <div id="display-expenses-div" style="display:none">
+            <p style="display:inline" > Row per Page</p>
+            <label >
+                <select id="rowsPerPageSelect" name ="numberOfExpenses" >
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">25</option>
+                    <option value="50">50</option>
+                </select>
+            </label>
+            <table id="expenseTable" class="expense-table content">
+                <thead class="expense-table">
+                    <tr class="expense-table">
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                        <th>category</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="expensesTableBody">
+                    <!-- Table body will be populated dynamically -->
+                </tbody>
+            </table>
+            <div id="paginationButtons">
+                <button id="prevPage">Previous</button>
+                <span id="currentPage">Page 1</span>
+                <button id="nextPage">Next</button>
+                <span id="pageInfo"></span>
+            </div>
+        </div>
+        <br>
+        <div id="date-picker-div" style="display:none; text-align:center">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" >
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" >
+            <label for="'report-file-name">Enter File Name
+            <input type="text" id="report-file-name"></label>
+            <button id="downloadBtn" disabled>Download</button>
+        </div>
+        <br>
+        <div id="reportTableDiv" style="display: none;">
+            <table id="reportsTable" class="expense-table">
+                <thead class="expense-table">
+                    <tr class="expense-table">
+                        <th>Report Name</th>
+                        <th>Generated Date</th>
+                        <th>Download</th>
+                    </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                    <!-- Table body will be populated dynamically -->
+                </tbody>
+            </table>
+            <div id="reportPaginationButtons">
+                <button id="reportPrevPage">Previous</button>
+                <span id="reportCurrentPage">Page 1</span>
+                <button id="reportNextPage">Next</button>
+            </div>
+        </div>
+
+        <div id="RazorPay-Div"></div>
+        <div id="leaderBoard-div" style="display:none">
+            <div class="leaderboard" style="display: none" id="leaderboard"></div>
+        </div>
+    </main>
+    <script src="/script.js"></script>
+    <script src="/expense.js"></script>
+    <script src="/payment.js"></script>
+    <script src="/premium.js"></script>
+</body>
+</html>
