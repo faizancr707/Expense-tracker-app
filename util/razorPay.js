@@ -1,4 +1,4 @@
-// util/razorPay.js
+
 const Razorpay = require('razorpay');
 
 const razorPayInstance = new Razorpay({
