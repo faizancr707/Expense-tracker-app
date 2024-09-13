@@ -9,15 +9,15 @@ exports.createOrder = async (req, res, next) => {
   let transaction;
   
   try {
-    // Start a new transaction
+    // new transaction
     transaction = await sequelize.transaction();
 
     const options = {
-      amount: 1 * 100, // Amount should be in the smallest unit of the currency (like paise for INR)
+      amount: 1 * 100, 
       currency: 'INR',
     };
 
-    // Create an order using Razorpay instance
+    
     razorPayInstance.orders.create(options, async (err, order) => {
       if (err) {
         console.log(err);
@@ -25,7 +25,7 @@ exports.createOrder = async (req, res, next) => {
         return res.status(500).json({ message: 'Something went wrong' });
       }
 
-      // Add Razorpay ID to the order and send response
+     
       order.razorPayId = process.env.RAZOR_ID;
       await transaction.commit();
       return res.status(200).json(order);
@@ -33,7 +33,7 @@ exports.createOrder = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     
-    // Roll back the transaction if it hasn't been committed yet
+    
     if (transaction && !transaction.finished) {
       await transaction.rollback();
     }
@@ -57,25 +57,25 @@ exports.addOrder = async (req, res, next) => {
       UserId: req.body.userId,
     };
 
-    // Create a new order in the database
+    
     const order = await Orders.create(orderDetails, { transaction });
 
-    // Check if the user exists in the database
+   
     const isExistingUser = await User.findByPk(req.body.userId);
 
     if (isExistingUser) {
-      // Update the user to premium status
+   
       await isExistingUser.update({ isPremiumUser: true }, { transaction });
-      await transaction.commit(); // Commit the transaction
+      await transaction.commit(); 
       return res.status(200).json({ message: 'User upgraded to premium.' });
     } else {
-      await transaction.rollback(); // Roll back if the user is not found
+      await transaction.rollback(); 
       return res.status(404).json({ message: 'User not found.' });
     }
   } catch (error) {
     console.error(error);
 
-    // Roll back the transaction if there is an error and it hasn't been committed yet
+    
     if (transaction && !transaction.finished) {
       await transaction.rollback();
     }

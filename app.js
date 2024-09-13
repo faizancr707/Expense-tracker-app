@@ -87,4 +87,3 @@ async function initiate() {
 
 initiate();
 
-//token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImZhaXphbmFsYTAwMDAwN0BnbWFpbC5jb20iLCJpYXQiOjE3MjU4NjAwNzUsImV4cCI6MTcyNTg2MzY3NX0.MVxqpt9LxVZHgPuSQ8JeUuZAKuIlF9p3st4Py8DnVzQ
