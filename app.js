@@ -25,6 +25,7 @@ const Report = require('./models/report');
 
 app.use(helmet());
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {flags:'a'});
+
 app.use(morgan('combined', {stream:accessLogStream}));
 app.use(cors());
 app.use(bodyParser.urlencoded( { extended:false }));
