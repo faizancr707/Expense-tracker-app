@@ -12,7 +12,7 @@ const secretKey = process.env.SECRET_KEY;
 const dotenv = require('dotenv');
 const config = dotenv.config();
 
-const SibApiV3Sdk = require('sib-api-v3-sdk');
+const SibApiV3Sdk = require('sib-api-v3-sdk'); 
 let defaultClient = SibApiV3Sdk.ApiClient.instance;
 let apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.SIB_KEY;
