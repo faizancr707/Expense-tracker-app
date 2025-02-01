@@ -17,6 +17,7 @@ let defaultClient = SibApiV3Sdk.ApiClient.instance;
 let apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.SIB_KEY;
 
+
 exports.register = async (req, res, next) => {
     let transaction = await sequelize.transaction();
     try {

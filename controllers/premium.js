@@ -15,7 +15,7 @@ const s3 = new S3Client({
   credentials: fromEnv(),
 });
 
-// Function to get leaderboard details
+// leaderboard detail
 exports.getLeaderBoardDetails = async (req, res, next) => {
   let transaction;
   try {
@@ -35,7 +35,7 @@ exports.getLeaderBoardDetails = async (req, res, next) => {
   }
 };
 
-// Function to generate and upload report to S3
+// generate and upload report to S3
 exports.generateReport = async (req, res, next) => {
   let transaction;
   try {
@@ -80,7 +80,7 @@ exports.generateReport = async (req, res, next) => {
   }
 };
 
-// Function to get all reports for a user
+//  get all reports for user
 exports.getAllReports = async (req, res, next) => {
   let transaction;
   try {
