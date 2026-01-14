@@ -1,85 +1,58 @@
 const Razorpay = require('razorpay');
 const razorPayInstance = require('../util/razorPay');
-const sequelize = require('../util/database');
-const { Sequelize, DataTypes } = require('sequelize');
-const Orders = require('../models/orders');
+
+const Order = require('../models/orders');
 const User = require('../models/user');
 
-exports.createOrder = async (req, res, next) => {
-  let transaction;
-  
+exports.createOrder = async (req, res) => {
   try {
-    // new transaction
-    transaction = await sequelize.transaction();
-
     const options = {
-      amount: 1 * 100, 
-      currency: 'INR',
+      amount: 100, // ₹1 = 100 paise
+      currency: 'INR'
     };
 
-    
-    razorPayInstance.orders.create(options, async (err, order) => {
-      if (err) {
-        console.log(err);
-        await transaction.rollback();
-        return res.status(500).json({ message: 'Something went wrong' });
-      }
+    const order = await razorPayInstance.orders.create(options);
 
-     
-      order.razorPayId = process.env.RAZOR_ID;
-      await transaction.commit();
-      return res.status(200).json(order);
+    res.status(201).json({
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      key_id: process.env.RAZOR_ID
     });
+
   } catch (error) {
     console.error(error);
-    
-    
-    if (transaction && !transaction.finished) {
-      await transaction.rollback();
-    }
-
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: 'Unable to create order' });
   }
 };
-
-exports.addOrder = async (req, res, next) => {
-  let transaction;
-
+exports.addOrder = async (req, res) => {
   try {
-    // Start a new transaction
-    transaction = await sequelize.transaction();
+    const {
+      razorpay_payment_id,
+      razorpay_order_id,
+      razorpay_signature
+    } = req.body.response;
 
-    const orderDetails = {
-      amount: req.body.amount,
-      payment_Id: req.body.response.razorpay_payment_id,
-      order_Id: req.body.response.razorpay_order_id,
-      signature: req.body.response.razorpay_signature,
-      UserId: req.body.userId,
-    };
+    const order = await Order.create({
+      paymentId: razorpay_payment_id,
+      orderId: razorpay_order_id,
+      signature: razorpay_signature,
+      status: 'SUCCESS',
+      userId: req.user.userId
+    });
 
-    
-    const order = await Orders.create(orderDetails, { transaction });
+    await User.findByIdAndUpdate(
+      req.user.userId,
+      { isPremiumUser: true }
+    );
 
-   
-    const isExistingUser = await User.findByPk(req.body.userId);
+    res.status(200).json({
+      message: 'User upgraded to premium',
+      order
+    });
 
-    if (isExistingUser) {
-   
-      await isExistingUser.update({ isPremiumUser: true }, { transaction });
-      await transaction.commit(); 
-      return res.status(200).json({ message: 'User upgraded to premium.' });
-    } else {
-      await transaction.rollback(); 
-      return res.status(404).json({ message: 'User not found.' });
-    }
   } catch (error) {
     console.error(error);
-
-    
-    if (transaction && !transaction.finished) {
-      await transaction.rollback();
-    }
-
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: 'Payment verification failed' });
   }
 };

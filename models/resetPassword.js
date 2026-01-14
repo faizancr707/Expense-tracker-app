@@ -1,25 +1,27 @@
-const sequelize = require('../util/database');
-const {DataTypes} = require('sequelize');
-const queryInterface = sequelize.getQueryInterface();
-
-const ResetPassword = sequelize.define( 'ResetPassword', {
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const resetPasswordSchema = new Schema(
+  {
     id: {
-        type:DataTypes.STRING,
-        primaryKey:true,
-        allowNull:false,
+      type: String,      // same as your STRING primaryKey
+      required: true
     },
-    isActive: {
-        type:DataTypes.BOOLEAN,
-        defaultValue:false,
-        allowNull:false
-    },
-    email: {
-        type:DataTypes.STRING,
-        allowNull:false,
-        validate: {
-            isEmail:true
-        }
-    },
-});
 
-module.exports = ResetPassword;
+    isActive: {
+      type: Boolean,
+      default: true      // usually reset links start active
+    },
+
+    email: {
+      type: String,
+      required: true,
+      lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address']
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+module.exports = mongoose.model('ResetPassword', resetPasswordSchema);

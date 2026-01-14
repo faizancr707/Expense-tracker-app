@@ -1,24 +1,39 @@
-const sequelize = require('../util/database');
-const {DataTypes} = require('sequelize');
-const queryInterface = sequelize.getQueryInterface();
+const mongoose = require('mongoose');
 
-const Orders = sequelize.define( 'Orders', {
+const orderSchema = new mongoose.Schema(
+  {
     amount: {
-        type:DataTypes.INTEGER,
-        allowNull:false
+      type: Number,
+      required: true
     },
-    payment_Id: {
-        type: DataTypes.STRING,
-        allowNull:false
-    }, 
-    order_Id: {
-        type: DataTypes.STRING,
-        allowNull:false
-    },
-    signature: {
-        type: DataTypes.STRING,
-        allowNull:false
-    }
-});
 
-module.exports = Orders;
+    paymentId: {
+      type: String,
+      required: true
+    },
+
+    orderId: {
+      type: String,
+      required: true
+    },
+
+    signature: {
+      type: String,
+      required: true
+    },
+
+    status: {
+      type: String,
+      default: 'SUCCESS'
+    },
+
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model('Order', orderSchema);

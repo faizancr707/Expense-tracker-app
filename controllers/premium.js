@@ -1,110 +1,112 @@
-const sequelize = require('../util/database');
-const { Sequelize, DataTypes } = require('sequelize');
-const User = require('../models/user');
 const Expense = require('../models/expense');
 const Report = require('../models/report');
-const multer = require('multer');
 
-// Import AWS SDK v3 modules
+// AWS SDK v3
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { fromEnv } = require('@aws-sdk/credential-provider-env');
 
-// Initialize the S3 client with AWS SDK v3
+// S3 client
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: fromEnv(),
 });
 
-// leaderboard detail
-exports.getLeaderBoardDetails = async (req, res, next) => {
-  let transaction;
+/**
+ * LEADERBOARD
+ */
+exports.getLeaderBoardDetails = async (req, res) => {
   try {
-    transaction = await sequelize.transaction();
+    const leaderboard = await Expense.aggregate([
+      {
+        $group: {
+          _id: '$userId',
+          totalExpense: { $sum: '$amount' }
+        }
+      },
+      { $sort: { totalExpense: -1 } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 0,
+          userId: '$user._id',
+          name: '$user.name',
+          totalExpense: 1
+        }
+      }
+    ]);
 
-    const users = await User.findAll({
-      attributes: ['id', 'firstName', 'lastName', 'totalExpense'],
-      order: [[Sequelize.literal('totalExpense'), 'ASC']],
-      transaction,
-    });
+    res.status(200).json(leaderboard);
 
-    await transaction.commit();
-    res.status(200).json(users);
-  } catch (error) {
-    if (transaction) await transaction.rollback();
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
-// generate and upload report to S3
-exports.generateReport = async (req, res, next) => {
-  let transaction;
+/**
+ * GENERATE REPORT
+ */
+exports.generateReport = async (req, res) => {
   try {
-    if (!req.file || Object.keys(req.file).length === 0) {
-      return res.status(400).send('No files were uploaded.');
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    transaction = await sequelize.transaction();
+    const fileKey = `${req.body.fileName}.csv`;
 
-    const uploadedFile = req.file;
-    const params = {
-      Bucket: process.env.BUCKET_NAME,
-      Key: `${req.body.fileName}.csv`,
-      ACL: 'public-read',
-      Body: uploadedFile.buffer,
-    };
-
-    const command = new PutObjectCommand(params);
-    const data = await s3.send(command);
-
-    const report = await Report.create(
-      {
-        fileName: req.body.fileName,
-        url: `https://${process.env.BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${params.Key}`,
-        UserId: req.body.userId,
-      },
-      { transaction }
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: process.env.BUCKET_NAME,
+        Key: fileKey,
+        Body: req.file.buffer,
+        ContentType: 'text/csv',
+      })
     );
 
-    await transaction.commit();
-
-    res.status(200).json({
-      url: report.url,
-      fileName: report.fileName,
-      generatedDate: report.createdAt,
+    const report = await Report.create({
+      fileName: req.body.fileName,
+      url: `https://${process.env.BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`,
+      userId: req.user.userId   // from auth middleware
     });
 
-    console.log('File uploaded successfully:', report.url);
-  } catch (error) {
-    if (transaction) await transaction.rollback();
+    res.status(200).json({
+      fileName: report.fileName,
+      generatedDate: report.createdAt,
+      url: report.url
+    });
+
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
-//  get all reports for user
-exports.getAllReports = async (req, res, next) => {
-  let transaction;
+/**
+ * GET ALL REPORTS
+ */
+exports.getAllReports = async (req, res) => {
   try {
-    transaction = await sequelize.transaction();
+    const reports = await Report.find({ userId: req.user.userId })
+      .sort({ createdAt: -1 });
 
-    const userId = req.body.userId;
-
-    const reports = await Report.findAll({
-      where: {
-        UserId: userId,
-      },
-      transaction,
-    });
-
-    const formattedReports = reports.map((report) => ({
-      fileName: report.fileName,
-      generatedDate: report.createdAt,
-      url: report.url,
+    const formatted = reports.map(r => ({
+      fileName: r.fileName,
+      generatedDate: r.createdAt,
+      url: r.url
     }));
 
-    await transaction.commit();
-    res.status(200).json(formattedReports);
-  } catch (error) {
-    if (transaction) await transaction.rollback();
+    res.status(200).json(formatted);
+
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };

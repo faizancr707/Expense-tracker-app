@@ -1,16 +1,20 @@
-const sequelize = require('../util/database');
-const {DataTypes} = require('sequelize');
-const queryInterface = sequelize.getQueryInterface();
-
-const Report = sequelize.define( 'reports', {
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const reportSchema = new Schema({
     fileName: {
-        type: DataTypes.STRING,
-        allowNull:false,
+      type: String,
+      required: true,
+      trim: true
     },
-    url: {
-        type: DataTypes.STRING,
-        allowNull: false
-    }
-} );
 
-module.exports = Report;
+    url: {
+      type: String,
+      required: true
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+module.exports = mongoose.model('Report', reportSchema);

@@ -1,21 +1,28 @@
-const sequelize = require('../util/database');
-const {DataTypes} = require('sequelize');
-const queryInterface = sequelize.getQueryInterface();
+const mongoose= require('mongoose');
+const Schema = mongoose.Schema;
+const expenseSchema = new Schema({
 
-const Expense = sequelize.define('expenses', {
-    amount: {
-        type: DataTypes.INTEGER,
-        defaultValue:0,
-        allowNull:false
-    }, 
-    desc: {
-        type: DataTypes.STRING,  
-        allowNull:false
+ amount: {
+      type: Number,        // INTEGER → Number
+      required: true,
+      min: 0,
+      default: 0
     },
+
+    desc: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
     category: {
-        type: DataTypes.ENUM('Food', 'Rent', 'Travel', 'Bills'),
-        allowNull: false
+      type: String,
+      required: true,
+      enum: ['Food', 'Rent', 'Travel', 'Bills']
     }
+  },
+  {
+    timestamps: true
 });
 
-module.exports = Expense;
+module.exports = mongoose.model('Expense', expenseSchema);

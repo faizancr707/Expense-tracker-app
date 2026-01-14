@@ -102,10 +102,10 @@ async function registerUser(user)  {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify( {
-                firstName : user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                password: user.password,
+                firstName : user.firstName.trim(),
+                lastName: user.lastName.trim(),
+                email: user.email.trim(),
+                password: user.password.trim(),
             }),
         });
 

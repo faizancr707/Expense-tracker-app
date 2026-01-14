@@ -13,7 +13,7 @@ const premium = require('../controllers/premium');
 
 router.post("/register", userController.register);
 router.post("/login", userController.login);
-router.post("/forgotPassword", userController.forgotPasword);
+router.post("/forgotPassword", userController.forgotPassword);
 router.post("/resetpassword/:uniqueId", userController.resetPassword);
 
 router.post("/add-expense",authToken.authToken, expenseController.addExpense);

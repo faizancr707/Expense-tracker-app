@@ -1,7 +1,0 @@
-node_modules/
-.env
-.env.*
-access.log
-logs/
-npm-debug.log*
-.DS_Store
